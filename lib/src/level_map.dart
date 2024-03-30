@@ -11,11 +11,15 @@ class LevelMap extends StatelessWidget {
 
   /// If set to false, scroll starts from the bottom end (level 1).
   final bool scrollToCurrentLevel;
+
+  final int extraSpaceOnTop;
+
   const LevelMap({
     Key? key,
     required this.levelMapParams,
     this.backgroundColor = Colors.transparent,
     this.scrollToCurrentLevel = true,
+    this.extraSpaceOnTop = 0,
   }) : super(key: key);
 
   @override
@@ -33,24 +37,36 @@ class LevelMap extends StatelessWidget {
                       levelMapParams.levelHeight) -
                   constraints.maxHeight),
           // physics: FixedExtentScrollPhysics(),
-          child: ColoredBox(
-            color: backgroundColor,
-            child: FutureBuilder<ImagesToPaint?>(
-              future: loadImagesToPaint(
-                levelMapParams,
-                levelMapParams.levelCount,
-                levelMapParams.levelHeight,
-                constraints.maxWidth,
+          child: Column(
+            children: [
+              SizedBox(
+                child: Container(
+                  color: backgroundColor,
+                ),
+                height: extraSpaceOnTop.toDouble(),
               ),
-              builder: (context, snapshot) {
-                return CustomPaint(
-                  size: Size(constraints.maxWidth,
-                      levelMapParams.levelCount * levelMapParams.levelHeight),
-                  painter: LevelMapPainter(
-                      params: levelMapParams, imagesToPaint: snapshot.data),
-                );
-              },
-            ),
+              ColoredBox(
+                color: backgroundColor,
+                child: FutureBuilder<ImagesToPaint?>(
+                  future: loadImagesToPaint(
+                    levelMapParams,
+                    levelMapParams.levelCount,
+                    levelMapParams.levelHeight,
+                    constraints.maxWidth,
+                  ),
+                  builder: (context, snapshot) {
+                    return CustomPaint(
+                      size: Size(
+                          constraints.maxWidth,
+                          levelMapParams.levelCount *
+                              levelMapParams.levelHeight),
+                      painter: LevelMapPainter(
+                          params: levelMapParams, imagesToPaint: snapshot.data),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -25,9 +25,10 @@ class _LevelMapPageState extends State<LevelMapPage> {
     return SafeArea(
       child: Scaffold(
         body: LevelMap(
+          extraSpaceOnTop: 50,
           backgroundColor: Colors.limeAccent,
           levelMapParams: LevelMapParams(
-            levelCount: 4,
+            levelCount: 20,
             currentLevel: 2.5,
             pathColor: Colors.black,
             currentLevelImage: ImageParams(
