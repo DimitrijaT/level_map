@@ -25,6 +25,8 @@ class _LevelMapPageState extends State<LevelMapPage> {
     return SafeArea(
       child: Scaffold(
         body: LevelMap(
+          staticSeed: 4,
+          isRandom: false,
           extraSpaceOnTop: 50,
           backgroundColor: Colors.limeAccent,
           levelMapParams: LevelMapParams(

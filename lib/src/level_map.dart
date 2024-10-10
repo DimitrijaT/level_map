@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:level_map/src/model/images_to_paint.dart';
 import 'package:level_map/src/model/level_map_params.dart';
+import 'package:level_map/src/model/pseudo_random_table.dart';
 import 'package:level_map/src/paint/level_map_painter.dart';
 import 'package:level_map/src/utils/load_ui_image_to_draw.dart';
 import 'package:level_map/src/utils/scroll_behaviour.dart';
@@ -14,12 +15,18 @@ class LevelMap extends StatelessWidget {
 
   final int extraSpaceOnTop;
 
+  final int staticSeed;
+
+  final bool isRandom;
+
   const LevelMap({
     Key? key,
     required this.levelMapParams,
     this.backgroundColor = Colors.transparent,
     this.scrollToCurrentLevel = true,
     this.extraSpaceOnTop = 0,
+    this.isRandom = true,
+    this.staticSeed = 0,
   }) : super(key: key);
 
   @override
@@ -49,11 +56,12 @@ class LevelMap extends StatelessWidget {
                 color: backgroundColor,
                 child: FutureBuilder<ImagesToPaint?>(
                   future: loadImagesToPaint(
-                    levelMapParams,
-                    levelMapParams.levelCount,
-                    levelMapParams.levelHeight,
-                    constraints.maxWidth,
-                  ),
+                      levelMapParams,
+                      levelMapParams.levelCount,
+                      levelMapParams.levelHeight,
+                      constraints.maxWidth,
+                      isRandom,
+                      PseudoRandomTable.hardcoded(staticSeed)),
                   builder: (context, snapshot) {
                     return CustomPaint(
                       size: Size(

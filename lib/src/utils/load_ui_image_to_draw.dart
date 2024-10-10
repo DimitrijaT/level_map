@@ -9,13 +9,19 @@ import 'package:level_map/src/model/image_details.dart';
 import 'package:level_map/src/model/image_params.dart';
 import 'package:level_map/src/model/images_to_paint.dart';
 import 'package:level_map/src/model/level_map_params.dart';
+import 'package:level_map/src/model/pseudo_random_table.dart';
 
 import 'image_offset_extension.dart';
 
 final math.Random _random = math.Random();
 
-Future<ImagesToPaint?> loadImagesToPaint(LevelMapParams levelMapParams,
-    int levelCount, double levelHeight, double screenWidth) async {
+Future<ImagesToPaint?> loadImagesToPaint(
+    LevelMapParams levelMapParams,
+    int levelCount,
+    double levelHeight,
+    double screenWidth,
+    bool isRandom,
+    PseudoRandomTable pseudoRandom) async {
   final ImageDetails completedLevelImageDetails = ImageDetails(
       imageInfo: await _getUiImage(levelMapParams.completedLevelImage),
       size: levelMapParams.completedLevelImage.size);
@@ -39,7 +45,7 @@ Future<ImagesToPaint?> loadImagesToPaint(LevelMapParams levelMapParams,
   final List<BGImage>? bgImageDetailsList =
       levelMapParams.bgImagesToBePaintedRandomly != null
           ? await _getBGImages(levelMapParams.bgImagesToBePaintedRandomly!,
-              levelCount, levelHeight, screenWidth)
+              levelCount, levelHeight, screenWidth, isRandom, pseudoRandom)
           : null;
   return ImagesToPaint(
     bgImages: bgImageDetailsList,
@@ -51,8 +57,13 @@ Future<ImagesToPaint?> loadImagesToPaint(LevelMapParams levelMapParams,
   );
 }
 
-Future<List<BGImage>?> _getBGImages(List<ImageParams> bgImagesParams,
-    int levelCount, double levelHeight, double screenWidth) async {
+Future<List<BGImage>?> _getBGImages(
+    List<ImageParams> bgImagesParams,
+    int levelCount,
+    double levelHeight,
+    double screenWidth,
+    bool isRandom,
+    PseudoRandomTable pseudoRandom) async {
   if (bgImagesParams.isNotEmpty) {
     final List<BGImage> _bgImagesToPaint = [];
     await Future.forEach<ImageParams>(bgImagesParams, (bgImageParam) async {
@@ -60,8 +71,8 @@ Future<List<BGImage>?> _getBGImages(List<ImageParams> bgImagesParams,
       if (imageInfo == null || bgImageParam.repeatCountPerLevel == 0) {
         return;
       }
-      final List<ui.Offset> offsetList =
-          _getImageOffsets(bgImageParam, levelCount, levelHeight, screenWidth);
+      final List<ui.Offset> offsetList = _getImageOffsets(bgImageParam,
+          levelCount, levelHeight, screenWidth, isRandom, pseudoRandom);
       _bgImagesToPaint.add(BGImage(
           imageDetails:
               ImageDetails(imageInfo: imageInfo, size: bgImageParam.size),
@@ -71,8 +82,13 @@ Future<List<BGImage>?> _getBGImages(List<ImageParams> bgImagesParams,
   }
 }
 
-List<ui.Offset> _getImageOffsets(ImageParams imageParams, int levelCount,
-    double levelHeight, double screenWidth) {
+List<ui.Offset> _getImageOffsets(
+    ImageParams imageParams,
+    int levelCount,
+    double levelHeight,
+    double screenWidth,
+    bool isRandom,
+    PseudoRandomTable pseudoRandom) {
   final List<ui.Offset> offsetList = [];
   final int imageRepeatCount =
       (levelCount * imageParams.repeatCountPerLevel).ceil();
@@ -83,18 +99,20 @@ List<ui.Offset> _getImageOffsets(ImageParams imageParams, int levelCount,
     double dx = 0;
     double _widthPerSide = screenWidth / 2;
     if (imageParams.side == Side.RIGHT ||
-        (imageParams.side == Side.BOTH && _random.nextBool())) {
+        (imageParams.side == Side.BOTH &&
+            (isRandom ? _random.nextBool() : pseudoRandom.nextBool()))) {
       dx = imageParams.imagePositionFactor *
           _widthPerSide *
-          _random.nextDouble();
+          (isRandom ? _random.nextDouble() : pseudoRandom.nextDouble());
       dx = screenWidth - dx;
     } else {
       dx = imageParams.imagePositionFactor *
           _widthPerSide *
-          _random.nextDouble();
+          (isRandom ? _random.nextDouble() : pseudoRandom.nextDouble());
     }
     final double dy = -(((i - 1) * heightBasedOnRepeatCount) +
-        (heightBasedOnRepeatCount * _random.nextDouble()));
+        (heightBasedOnRepeatCount *
+            (isRandom ? _random.nextDouble() : pseudoRandom.nextDouble())));
     offsetList.add(ui.Offset(dx, dy).clamp(
       imageParams.size,
       Size(screenWidth, levelCount * levelHeight),
